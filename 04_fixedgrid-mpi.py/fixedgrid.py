@@ -208,8 +208,8 @@ def fixedgrid(nrows=50, ncols=50,
         print 'done'
 
 
-if __name__ == "__main__":
-  fixedgrid(tstart=0, tend=900)
+# Make it so
+fixedgrid(tstart=0, tend=900)
 
 
 
