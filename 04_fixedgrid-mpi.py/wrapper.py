@@ -1,7 +1,9 @@
+"""
+TAU wrapper for fixedgrid
+
+To run with TAU:
+mpirun -np 4 tau_exec -T python,mpi python wrapper.py 
+"""
 import tau
-
-def mpi_wrapper():
-    import fixedgrid
-
-tau.run('mpi_wrapper()')
+tau.run('import fixedgrid')
 
