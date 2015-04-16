@@ -4,3 +4,6 @@
 *.pyc
 *.mod
 .ignored
+
+profile.*
+MULTI__*

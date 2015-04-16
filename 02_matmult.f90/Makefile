@@ -11,7 +11,7 @@
 
 .SUFFIXES : .f90
 
-F90 = tau_f90.sh
+F90 = gfortran
 
 LIBS= 
 INCLUDE=
