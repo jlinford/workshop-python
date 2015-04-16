@@ -1,0 +1,111 @@
+//-----------------------------------------------------------------------------
+// @file
+// @author John C. Linford (jlinford@paratools.com)
+// @version 1.0
+//
+// @brief Kppa input file for example mechanism from KPP 2.1 user's manual
+//
+// The KPP 2.1 user's manual defines a small stratospheric mechanism
+// for example purposes.  It is replicated here for consistency checks.  
+//
+// See http://people.cs.vt.edu/~asandu/Software/Kpp/ for more information.
+//-----------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------
+// This is the preprocessor file for the small stratospheric mechanism
+//-----------------------------------------------------------------------------
+#MODEL       small_strato 
+
+//-----------------------------------------------------------------------------
+// Use the Rosenbrock time integrator
+//-----------------------------------------------------------------------------
+#INTEGRATOR  rosenbrock
+
+//-----------------------------------------------------------------------------
+// Set the calculation precision
+//-----------------------------------------------------------------------------
+#PRECISION   single
+
+//-----------------------------------------------------------------------------
+// Set the form of the ODE function
+// aggregate : combine production/destruction
+// split     : separate production/destruction
+//-----------------------------------------------------------------------------
+#FUNCTION    aggregate
+
+//-----------------------------------------------------------------------------
+// Set the storage format of the Jacobian
+// sparse_lu_row : row-compressed Jacobian with zero fill
+// sparse_row    : row-compressed Jacobian
+// full          : no compression
+//-----------------------------------------------------------------------------
+#JACOBIAN    sparse_lu_row
+
+//-----------------------------------------------------------------------------
+// Set the target output language
+// One of: Fortran90, C, Python
+//-----------------------------------------------------------------------------
+#LANGUAGE    Python
+
+//-----------------------------------------------------------------------------
+// Set the target accelerator
+// One of: Serial, OpenMP, CUDA_GPU
+//-----------------------------------------------------------------------------
+#ACCEL       OpenMP
+
+//-----------------------------------------------------------------------------
+// Specify program driver
+// performance  : Only calls GridIntegrate
+// general      : Reports species concentrations to stdout
+// plotting     : Draws plots of species concentrations
+// none         : Makefile only, no driver
+//-----------------------------------------------------------------------------
+#DRIVER      general
+
+//-----------------------------------------------------------------------------
+// Specify grid size in program driver
+// Any number of dimensions can be specified.
+// Seperate dimensions with semicolons ';'
+//-----------------------------------------------------------------------------
+#GRID 100; 100; 100;
+
+//-----------------------------------------------------------------------------
+// Specify time dimension in program driver
+// TSTART : Time at integration start
+// TEND   : Time at integration end
+// TDEL   : Time between integrator restarts
+//-----------------------------------------------------------------------------
+#TSTART 0   // Seconds
+#TEND 3600  // Seconds
+#TDEL 350   // Seconds
+
+//-----------------------------------------------------------------------------
+// Concentrations of species on the MONITOR list are reported
+// after each call to GridIntegrate.  The selected driver 
+// determines how the reporting is done.
+//-----------------------------------------------------------------------------
+#MONITOR 
+    O;
+    O1D;
+    O3;
+    NO;
+    NO2;
+    O2;
+
+//-----------------------------------------------------------------------------
+// Concentrations of species on the LOOKAT list are written
+// to a binary file after each call to GridIntegrate.
+//-----------------------------------------------------------------------------
+#LOOKAT O3; NO2;
+
+//-----------------------------------------------------------------------------
+// The mass balance of species on the CHECK list will be
+// checked as the chemical mechanism is calculated.
+// Note that this has no impact on mechanism performance
+// since this is done in the preprocessor.
+//-----------------------------------------------------------------------------
+#CHECK 
+    O;
+    N;
+
