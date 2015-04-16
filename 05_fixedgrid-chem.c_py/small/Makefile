@@ -36,6 +36,7 @@ LIB = libsmall.so
 MAIN = small_main.py
 
 all: $(LIB)
+	cp $(LIB) ..
 
 $(LIB): $(OBJ)
 	$(CC) $(LDFLAGS) -shared -o $@ $(OBJ)
@@ -120,6 +121,7 @@ small_solve.o: small_solve.c \
 clean:
 	rm -f small_integrate.o small_jacobian.o small_rosenbrock.o small_sparse.o small_blas.o small_rates.o small_function.o small_decomp.o small_solve.o *.pyc
 	rm -f small.exe *.so
+	rm -f ../$(LIB)
 	
 destroy: clean
 	rm -f __init__.py small_integrate.c small_jacobian.c small_main.py small_integrate.py small_rosenbrock.c small_sparse.c small_blas.c small_rates.c small_function.c small_decomp.c small_solve.c small_initialize.py small_monitor.py small_integrate.o small_jacobian.o small_rosenbrock.o small_sparse.o small_blas.o small_rates.o small_function.o small_decomp.o small_solve.o small_integrate.h small_jacobian.h small_integrate.py small_parameters.h small_parameters.py small_rosenbrock.h small_sparse.h small_blas.h small_rates.h small_function.h small_decomp.h small_solve.h small_initialize.py small_driver_parameters.py small_monitor.py Makefile

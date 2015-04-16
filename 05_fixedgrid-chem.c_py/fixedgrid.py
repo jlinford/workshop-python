@@ -1,6 +1,10 @@
 import numpy as np
 from mpi4py import MPI
 
+from small import small_parameters as chem_param
+from small import small_initialize as chem_init
+from small import small_integrate as chem_integrate
+
 # Initialize MPI
 COMM = MPI.COMM_WORLD
 RANK = COMM.Get_rank()
@@ -103,32 +107,34 @@ def discretize_rows(dx, dt, conc, wind, diff):
     cb = np.empty(4)
     wb = np.empty(4)
     db = np.empty(4)
-    m, n = conc.shape
+    m, n, s = conc.shape
     for i in xrange(m):
-        cb[0] = conc[i][n-2]
-        cb[1] = conc[i][n-1]
-        cb[2] = conc[i][0]
-        cb[3] = conc[i][1]
-        wb[0] = wind[i][n-2]
-        wb[1] = wind[i][n-1]
-        wb[2] = wind[i][0]
-        wb[3] = wind[i][1]
-        db[0] = diff[i][n-2]
-        db[1] = diff[i][n-1]
-        db[2] = diff[i][0]
-        db[3] = diff[i][1]
-        conc[i,:] = discretize(dx, dt, conc[i,:], wind[i,:], diff[i,:], cb, wb, db)
+        for k in xrange(s):
+            cb[0] = conc[i][n-2][k]
+            cb[1] = conc[i][n-1][k]
+            cb[2] = conc[i][0][k]
+            cb[3] = conc[i][1][k]
+            wb[0] = wind[i][n-2]
+            wb[1] = wind[i][n-1]
+            wb[2] = wind[i][0]
+            wb[3] = wind[i][1]
+            db[0] = diff[i][n-2]
+            db[1] = diff[i][n-1]
+            db[2] = diff[i][0]
+            db[3] = diff[i][1]
+            conc[i,:,k] = discretize(dx, dt, conc[i,:,k], wind[i,:], diff[i,:], cb, wb, db)
 
 
 def discretize_cols(dy, dt, conc, wind, diff):
     cb = np.empty(4)
     wb = np.empty(4)
     db = np.empty(4)
-    m, n = conc.shape
+    m, n, s = conc.shape
     
     shape = (2, n)
-    north_conc = np.empty(shape)
-    south_conc = np.empty(shape)
+    conc_shape = (2, n, s)
+    north_conc = np.empty(conc_shape, dtype=np.float32)
+    south_conc = np.empty(conc_shape, dtype=np.float32)
     north_wind = np.empty(shape)
     south_wind = np.empty(shape)
     north_diff = np.empty(shape)
@@ -137,9 +143,9 @@ def discretize_cols(dy, dt, conc, wind, diff):
     north = NPE - 1 if RANK == 0 else RANK - 1
     south = 0 if RANK == (NPE-1) else RANK + 1
 
-    COMM.Sendrecv(sendbuf=conc[:2,:], dest=north, sendtag=11,
+    COMM.Sendrecv(sendbuf=conc[:2,:,:], dest=north, sendtag=11,
                   recvbuf=south_conc, source=south, recvtag=11)
-    COMM.Sendrecv(sendbuf=conc[-2:,:], dest=south, sendtag=12,
+    COMM.Sendrecv(sendbuf=conc[-2:,:,:], dest=south, sendtag=12,
                   recvbuf=north_conc, source=north, recvtag=12)
     COMM.Sendrecv(sendbuf=wind[:2,:], dest=north, sendtag=11,
                   recvbuf=south_wind, source=south, recvtag=11)
@@ -151,19 +157,20 @@ def discretize_cols(dy, dt, conc, wind, diff):
                   recvbuf=north_diff, source=north, recvtag=12)
 
     for j in xrange(n):
-        cb[0] = north_conc[0][j]
-        cb[1] = north_conc[1][j]
-        cb[2] = south_conc[0][j]
-        cb[3] = south_conc[1][j]
-        wb[0] = north_wind[0][j]
-        wb[1] = north_wind[1][j]
-        wb[2] = south_wind[0][j]
-        wb[3] = south_wind[1][j]
-        db[0] = north_diff[0][j]
-        db[1] = north_diff[1][j]
-        db[2] = south_diff[0][j]
-        db[3] = south_diff[1][j]
-        conc[:,j] = discretize(dy, dt, conc[:,j], wind[:,j], diff[:,j], cb, wb, db)
+        for k in xrange(s):
+            cb[0] = north_conc[0][j][k]
+            cb[1] = north_conc[1][j][k]
+            cb[2] = south_conc[0][j][k]
+            cb[3] = south_conc[1][j][k]
+            wb[0] = north_wind[0][j]
+            wb[1] = north_wind[1][j]
+            wb[2] = south_wind[0][j]
+            wb[3] = south_wind[1][j]
+            db[0] = north_diff[0][j]
+            db[1] = north_diff[1][j]
+            db[2] = south_diff[0][j]
+            db[3] = south_diff[1][j]
+            conc[:,j,k] = discretize(dy, dt, conc[:,j,k], wind[:,j], diff[:,j], cb, wb, db)
 
 
 def fixedgrid(nrows=50, ncols=50, 
@@ -183,17 +190,48 @@ def fixedgrid(nrows=50, ncols=50,
     print '%d: %d rows' % (RANK, my_rows)
     my_row0 = (nrows / NPE) * RANK
     
+    ncells = my_rows * my_cols
     shape = (my_rows, my_cols)
     source = (source_row, source_col)
-    conc = np.full(shape, O3_init)
+    conc = np.zeros((my_rows, my_cols, chem_param.NSPEC), dtype=np.float32)
     wind_u = np.full(shape, wind_init[0])
     wind_v = np.full(shape, wind_init[1])
     diff = np.full(shape, diff_init)
     time = tstart
     
+    # Absolute integration tolerances for variable species 
+    abstol = np.full(5, chem_param.ATOLS, dtype=np.float32)
+    # Relative integration tolerances for variable species 
+    reltol = np.full(5, chem_param.RTOLS, dtype=np.float32)
+
+    # Integer integration in/out parameters 
+    idata = np.zeros(20, dtype=np.int32)
+    # Real value integration in/out parameters 
+    rdata = np.zeros(20, dtype=np.float32)
+    # Last timestamp in each grid cell 
+    lastH = np.zeros(ncells, dtype=np.float32)
+    for i in xrange(my_rows):
+        for j in xrange(my_cols):
+            chem_init.Initialize(conc[i,j,:],conc[i,j,chem_param.NVAR:])  
+
+    # Rosenbrock default parameters 
+    idata[0] = 0       # System is non-autonomous: F = F(t,y) 
+    idata[1] = 0       # Use vector tolerances 
+    idata[2] = 100000  # Maximum number of integration steps 
+    idata[3] = 5       # Rodas4 Rosenbrock method 
+    idata[4] = 0       # Tolerance vectors will not be checked 
+
+    rdata[0] = 0       # Integration step size lower bound: 0 recommended 
+    rdata[1] = 0       # Integration step size upper bound: 0 recommended 
+    rdata[2] = dt # Starting integration step size 
+    rdata[3] = 0.2     # Lower bound on step decrease factor 
+    rdata[4] = 6       # Upper bound on step increase factor 
+    rdata[5] = 0.1     # Step decrease factor after step rejection 
+    rdata[6] = 0.9     # Safety factor in the computation of new step size 
+    
     if (source_row > my_row0) and (source_row < (my_row0+my_rows)):
         print 'Rank %d added plume at %s' % (RANK, str(source))
-        conc[source_row-my_row0,source_col] += source_rate / (dx * dy)
+        conc[source_row-my_row0,source_col,chem_param.IND_O3] += source_rate / (dx * dy)
 
     if RANK == 0:
         print 'TIME: %g' % time
@@ -201,6 +239,8 @@ def fixedgrid(nrows=50, ncols=50,
         discretize_rows(dx, dt/2.0, conc, wind_u, diff)
         discretize_cols(dy, dt, conc, wind_v, diff)
         discretize_rows(dx, dt/2.0, conc, wind_u, diff)
+        tsretval = chem_integrate.GridIntegrate(my_rows*my_cols, conc, time, time + dt, 
+                                                abstol, reltol, idata, rdata, lastH)
         time += dt
         if RANK == 0:
             print 'TIME: %g' % time
