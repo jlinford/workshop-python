@@ -1,0 +1,26 @@
+This simple program sends a message in a ring. To instrument it with TAU 
+at the MPI layer:
+
+% use tau
+% setenv TAU_MAKEFILE $TAU/Makefile.tau-icpc-mpi-pdt
+% tau_f90.sh ring.f90 -o ring
+% srun -n 4 -p pdebug ./ring
+generates the profiles. 
+% pprof
+
+Now, to generate traces with clock synchronization turned on, we can use:
+% setenv TAU_TRACE 1
+and without any need for recompiling, we can say:
+% srun -n 4 -p pdebug ./ring
+% tau_treemerge.pl
+% tau2otf tau.trc tau.edf app.otf
+% vampir app.otf
+
+to visualize the traces. 
+
+To use VampirTrace, we may use:
+% vtf90 -vt:f90 mpif90 ring.f90 -o ring
+% srun -n 4 -p pdebug ./ring
+and without any need for merging or conversion:
+% vampir ring.otf 
+

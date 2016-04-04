@@ -7,3 +7,10 @@
 
 profile.*
 MULTI__*
+
+.nfs*
+
+*.pdb
+*.inst.*
+*.pomp.*
+*.inc

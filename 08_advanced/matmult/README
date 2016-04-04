@@ -1,0 +1,105 @@
+You need to 
+source /glade/apps/opt/ParaTools/tau/tau.bashrc (or tau.cshrc)
+
+Try compiling the code without any instrumentation on the Yellowstone clusters:
+% mpif90 matmult.f90 -o matmult
+
+Launch the job:
+
+Edit the job script to put your project id (-P) and launch:
+% bsub < run.job 
+Here we use tau_exec -ebs to instrument the code. 
+% pprof
+% paraprof 
+
+To use source code instrumentation:
+% ls /glade/apps/opt/ParaTools/tau/latest/x86_64/lib/Makefile.tau
+Makefile.tau
+Makefile.tau-intel12-mpich2-icpc-mpi-pdt
+Makefile.tau-intel12-mpich2-icpc-mpi-python-pdt
+Makefile.tau-intel16-mpich2-icpc-mpi-pdt
+Makefile.tau-intel16-mpich2-icpc-mpi-python-pdt
+Makefile.tau-intel16-mpich2-icpc-ompt-mpi-pdt-openmp
+
+% export TAU_MAKEFILE=$TAU/Makefile.tau-intel12-mpich2-icpc-mpi-python-pdt
+% make clean; make F90=tau_f90.sh
+% bsub < run.job 
+% paraprof
+
+To use an alternate configuration, say with Intel(icpc) and PAPI:
+% tauf90 -tau:icpc,papi,pdt matmult.f90 -o matmult
+% setenv TAU_METRICS TIME:PAPI_FP_INS:PAPI_L1_DCM
+% rm -rf profile.*
+(it is important to delete the old profile data before running a new experiment)
+% mpirun -np 4 ./matmult
+% paraprof
+
+To generate TAU trace files:
+% setenv TAU_TRACE 1
+% mpirun -np 4 ./matmult
+% tau_treemerge.pl
+% tau2otf tau.trc tau.edf app.otf
+% vampir app.otf & 
+
+To use VampirTrace:
+% vtf90 -vt:f90 mpif90 matmult.f90 -o matmult
+% mpirun -np 4 ./matmult
+% vampir matmult.otf &
+
+To use source level instrumentation in TAU with PDT:
+Choose one:
+% setenv TAU_MAKEFILE $TAU/Makefile.tau-icpc-papi-mpi-pdt
+
+% tau_f90.sh matmult.f90 -o matmult
+
+% mpirun -np 4 ./matmult
+
+% pprof
+or 
+% paraprof
+
+To pack:
+% paraprof --pack mat.ppk
+% rm -rf profile.* MULT*
+
+and to view:
+% paraprof mat.ppk
+
+
+To use Loop-level instrumentation:
+% setenv TAU_OPTIONS '-optTauSelectFile=select.tau -optVerbose'
+% tau_f90.sh matmult.f90 -o matmult
+% mpirun -np 4 ./matmult
+% pprof
+or 
+% paraprof
+
+To use compiler based instrumentation:
+
+% setenv TAU_OPTIONS '-optCompInst -optVerbose'
+% tau_f90.sh matmult.f90 -o matmult
+
+OR 
+% tauf90 matmult.f90 -o matmult
+(tauf90 is a shorthand for tau_f90.sh -tau_options=-optCompInst )
+
+
+To see communication matrix display:
+% setenv TAU_COMM_MATRIX 1
+% mpirun -np 4 ./matmult
+% paraprof
+Windows -> Communication Matrix
+
+To see callpath profiling:
+% setenv TAU_CALLPATH 1
+% setenv TAU_CALLPATH_DEPTH 100
+% mpirun -np 4 ./matmult
+% paraprof
+
+
+To see peak heap memory usage:
+% mpif90 matmult.f90 -o matmult
+(or use an instrumented executable)
+% mpirun -np 4 tau_exec -memory ./matmult
+% paraprof
+Right click on a node -> Show Context Event Window and observe the Max value for Heap Memory Usage (in KB).  This is the high watermark for heap memory usage. 

@@ -1,0 +1,18 @@
+This example can be used on one or more cores using MPI, pthread, OpenMP or with a hybrid MPI+<thread> runtime. It features a selective instrumentation file that uses outer-loop level instrumentation in two routines. 
+
+source /glade/apps/opt/ParaTools/tau/tau.bashrc (or tau.cshrc)
+setenv TAU_MAKEFILE $TAU/Makefile.tau-intel12-mpich2-icpc-mpi-pdt
+make
+
+bsub < run.job 
+
+pprof
+paraprof
+
+
+To use compiler based instrumentation:
+bash:
+export TAU_OPTIONS='-optCompInst -optVerbose'
+tcsh:
+setenv TAU_OPTIONS '-optCompInst -optVerbose'
+make

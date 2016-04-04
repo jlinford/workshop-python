@@ -1,0 +1,45 @@
+This directory contains some example codes for use in the TAU workshop. 
+-----------------------------------------------------------------------
+
+NOTE 1: Before starting on Yellowstone, please use:
+% source /glade/apps/opt/ParaTools/tau/tau.bashrc (or .cshrc)
+to set the environment variables on Surface.llnl.gov
+
+This will set up the modules and paths for this workshop. It is also needed to locate some tools (Scalasca, VampirTrace) for trace processing. 
+
+To run the jobs simple edit the run.job:
+#BSUB -P SORE0001        # project code
+and use your project code.
+
+% bsub < workshop/run.job 
+on the other Linux systems.
+
+We recommend reading the README file in each subdirectory and trying the 
+commands to generate and analyze the data. 
+
+1) matmult - a simple Fortran MPI program for matrix multiplication.
+2) mm - a simple C MPI program for matrix multiplication. Can use pthread, OpenMP, and/or MPI.
+3) ring - a simple Fortran MPI program for sending a message in a ring.
+4) cthreads - C with pthreads
+5) NPB3.1 - shows instrumentation in C and Fortran applications using MPI. 
+6) NPB3.3-MZ-MPI - shows instrumentation in C and Fortran applications using MPI with OpenMP. 
+7) memoryleakdetect - an example of using TAU for detecting memory leaks in F90, C/C++ programs.
+8) opari - shows how OpenMP applications can be profiled with TAU.
+9) papi - loop level instrumentation and use of hardware performance counters
+10) sweep3d - a parallel Fortran MPI application. Illustrates use of Scalasca/Expert for automatically detecting bottlenecks.
+mpirun -np 16 ./matmult
+For further information, please visit the TAU webpage:
+http://tau.uoregon.edu
+
+NOTE 3:
+These examples assume tcsh/csh as your shell. If you are using bash, please use:
+
+% export TAU_MAKEFILE=<value>
+% export PATH=$PATH:<dir>
+
+instead of 
+
+% setenv TAU_MAKEFILE <value>
+% set path=($path <dir>)
+
+- Sameer Shende (info@paratools.com)

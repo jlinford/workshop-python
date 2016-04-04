@@ -1,0 +1,26 @@
+In this example, we illustrate how to instrument a Fortran and C code with TAU.
+Please edit the config/make.def file and config/suite.def file to choose the
+name of the compilers (F90 = tau_f90.sh, CC = tau_cc.sh) and the problem size
+respectively. The suite.def file contains a list of applications to be built
+and the problem size (S, W, A, B, C...) and the number of CPUs to use. For 
+instance, lu.W.4 stands for W problem built for 4 cpus. 
+
+We should use a TAU stub makefile with -mpi and -pdt in its name. To try
+the simplest, use
+% setenv TAU_MAKEFILE /usr/global/tools/tau/training//tau_latest/x86_64/lib/Makefile.tau-mpi-pdt
+
+% make clean
+% make
+% cd bin
+% srun -n 4 -p pdebug ./lu.W.4
+% pprof
+% paraprof
+
+
+To use TAU to generate traces, we use
+setenv TAU_TRACE 1; setenv TAU_PROFILE 0 
+and rerun. 
+% srun -n 4 -p pdebug ./lu.W.4
+% tau_treemerge.pl
+% tau2otf tau.trc tau.edf app.otf
+% vampir app.otf

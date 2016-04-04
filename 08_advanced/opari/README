@@ -1,0 +1,50 @@
+This example demonstrates a mixed C++, C program that uses OpenMP. There is 
+no MPI in this case. To compile the program without any instrumentation:
+% make
+% setenv OMP_NUM_THREADS 4
+% ./mandel
+generates mandel.ppm output.
+
+Now, to instrument it with TAU and Opari (OpenMP rewriter from KOJAK), we 
+choose a TAU stub makefile that uses Opari in its name. One such file with
+PGI compilers (GNU compilers earlier than v4.3 do not support OpenMP) is:
+% ls $TAU/Make* | grep opari
+/usr/global/tools/tau/training//tau_latest/x86_64/lib/Makefile.tau-icpc-mpi-pdt-openmp-opari
+/usr/global/tools/tau/training//tau_latest/x86_64/lib/Makefile.tau-icpc-mpi-pdt-openmp-opari-epilog-scalasca-trace
+/usr/global/tools/tau/training//tau_latest/x86_64/lib/Makefile.tau-icpc-papi-pdt-openmp-opari
+/usr/global/tools/tau/training//tau_latest/x86_64/lib/Makefile.tau-papi-pdt-openmp-opari
+
+
+Note: we do not want a stub makefile with -mpi in its name because this is not
+a hybrid MPI+OpenMP code. Let us choose the one with -pdt-openmp-opari options. 
+% setenv TAU_MAKEFILE /usr/global/tools/tau/training//tau_latest/x86_64/lib/Makefile.tau-icpc-papi-pdt-openmp-opari
+
+
+
+Its name includes PDT for user function instrumentation, openmp and opari for 
+source code re-writing for OpenMP instrumentation.
+
+% mandel
+% pprof
+% paraprof
+
+Click on File -> Create Selective Instrumentation File to open the window for selective instrumentation. See the list of routines that were throttled. 
+
+So, let us create a selective instrumentation file and put in
+% cat select.tau
+BEGIN_EXCLUDE_LIST
+char ColorTable::operator()(int, base) const
+END_EXCLUDE_LIST
+
+and specify its use using
+% setenv TAU_OPTIONS '-optVerbose -optTauSelectFile=select.tau -optKeepFiles'
+This tells tau_compiler.sh to use this selective instrumentation file and
+it tells it to not delete the intermediate files. That way, we can check and see that this routine has not been instrumented. 
+
+Let us re-compile this program:
+% make clean
+% make CXX=tau_cxx.sh CC=tau_cc.sh
+% ./mandel
+
+
+

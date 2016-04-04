@@ -1,0 +1,16 @@
+Sun Dec  3 18:04:44 2006
+LA-MPI:run/Admin.cc:334: Error: An MPI process exited abnormally with status 1 [rank=3 host=1 proc=1 pid=6659]
+Sun Dec  3 18:04:44 2006
+LA-MPI:run/Admin.cc:334: Error: An MPI process exited abnormally with status 1 [rank=1 host=0 proc=1 pid=6660]
+Sun Dec  3 18:04:44 2006
+LA-MPI:run/Admin.cc:334: Error: An MPI process exited abnormally with status 1 [rank=4 host=2 proc=0 pid=6657]
+Sun Dec  3 18:04:45 2006
+LA-MPI:run/Run.cc:191: mpirun exiting: aborting clients
+Sun Dec  3 18:05:10 2006
+LA-MPI:run/Admin.cc:334: Error: An MPI process exited abnormally with status 1 [rank=2 host=1 proc=0 pid=6677]
+Sun Dec  3 18:05:10 2006
+LA-MPI:run/Admin.cc:334: Error: An MPI process exited abnormally with status 1 [rank=5 host=2 proc=1 pid=6680]
+Sun Dec  3 18:05:10 2006
+LA-MPI:run/Admin.cc:334: Error: An MPI process exited abnormally with status 1 [rank=0 host=0 proc=0 pid=6676]
+Sun Dec  3 18:05:11 2006
+LA-MPI:run/Run.cc:191: mpirun exiting: aborting clients

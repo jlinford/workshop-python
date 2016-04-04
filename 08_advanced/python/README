@@ -1,0 +1,38 @@
+To measure the performance of this simple Python program. We first run it without TAU using:
+% ./foo.py
+
+To use TAU, let us examine the configurations that are available:
+
+%  ls $TAU/binding*
+
+/usr/global/tools/tau/training//tau_latest/x86_64/lib/bindings-icpc-mpi-python-pdt:
+ctau_impl.so          libTAU-preload.so  ltau.py   tau.py
+libTAU-memorywrap.so  libTAU.so          pytau.so
+
+/usr/global/tools/tau/training//tau_latest/x86_64/lib/bindings-icpc-python-pdt:
+ctau_impl.so          libTAU-preload.so  ltau.py   tau.py
+libTAU-memorywrap.so  libTAU.so          pytau.so
+
+
+Let us choose bindings-icpc-python-pdt as there is no MPI in this code:
+setenv PYTHONPATH /usr/global/tools/tau/training//tau_latest/x86_64/lib/bindings-icpc-python-pdt\:$PYTHONPATH
+
+
+To instrument all Python routines, we create a simple wrapper:
+% cat wrapper.py
+#!/usr/bin/env python
+
+import tau
+def OurMain():
+    import foo
+
+tau.run('OurMain()')
+
+
+and execute it as:
+% ./wrapper.py
+% pprof
+or 
+% paraprof
+to observe the performance. 
+

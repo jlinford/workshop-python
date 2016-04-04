@@ -1,0 +1,4 @@
+BEGIN_EXCLUDE_LIST
+char ColorTable::operator()(int, base) const
+END_EXCLUDE_LIST
+

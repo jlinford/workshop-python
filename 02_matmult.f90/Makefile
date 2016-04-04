@@ -11,7 +11,7 @@
 
 .SUFFIXES : .f90
 
-F90 = gfortran
+F90 = mpif90
 
 LIBS= 
 INCLUDE=

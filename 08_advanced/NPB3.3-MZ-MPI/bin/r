@@ -1,0 +1,4 @@
+#!/bin/sh
+export OMP_NUM_THREADS=4
+mpirun -np 4 tau_exec -ebs -T ompt -ompt ./bt-mz.A.4
+

@@ -1,0 +1,17 @@
+In this example, we illustrate instrumentation of a pthread program. For Lynx:
+
+1) Set TAU_MAKEFILE environment variable:
+
+% setenv TAU_MAKEFILE /usr/global/tools/tau/training//tau_latest/x86_64/lib/Makefile.tau-icpc-papi-mpi-pthread-pdt
+
+
+2) Build the executable
+% make
+
+3) Run it
+% ./threaded
+
+4) Analyze the performance data
+% pprof
+
+

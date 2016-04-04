@@ -1,0 +1,28 @@
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call 
+---------------------------------------------------------------------------------------
+100.0        0.017          591           1           3     591399 MATRIX [{simple.f90} {22,1}-{27,18}]
+ 99.8          590          590           1           0     590186 SCRATCH::USE_SCRATCH [{simple.f90} {10,4}-{15,29}]
+  0.2        0.039            1           1           2       1120 SCRATCH::DEALLOCATE_SCRATCH [{simple.f90} {16,4}-{19,36}]
+  0.2            1            1           2           0        540 void free(void*) C
+  0.0        0.062        0.076           1           3         76 SCRATCH::ALLOCATE_SCRATCH [{simple.f90} {5,4}-{9,34}]
+  0.0        0.014        0.014           3           0          5 void * malloc(size_t) C
+---------------------------------------------------------------------------------------
+
+USER EVENTS Profile :NODE 0, CONTEXT 0, THREAD 0
+---------------------------------------------------------------------------------------
+NumSamples   MaxValue   MinValue  MeanValue  Std. Dev.  Event Name
+---------------------------------------------------------------------------------------
+         3      8E+06      8E+06      8E+06          0  Heap Allocate
+         3      8E+06      8E+06      8E+06          0  Heap Allocate : MATRIX [{simple.f90} {22,1}-{27,18}] => SCRATCH::ALLOCATE_SCRATCH [{simple.f90} {5,4}-{9,34}]
+         2      8E+06      8E+06      8E+06          0  Heap Free
+         2      8E+06      8E+06      8E+06          0  Heap Free : MATRIX [{simple.f90} {22,1}-{27,18}] => SCRATCH::DEALLOCATE_SCRATCH [{simple.f90} {16,4}-{19,36}]
+         5  2.344E+04       7812  1.406E+04       5846  Heap Memory Used (KB)
+         1      8E+06      8E+06      8E+06          0  MEMORY LEAK! Heap Allocate : MATRIX [{simple.f90} {22,1}-{27,18}] => SCRATCH::ALLOCATE_SCRATCH [{simple.f90} {5,4}-{9,34}]
+         2  2.344E+04  1.562E+04  1.953E+04       3906  [GROUP=MAX_MARKER] Heap Memory Used (KB)
+         2  2.344E+04  1.562E+04  1.953E+04       3906  [GROUP=MAX_MARKER] Heap Memory Used (KB) : MATRIX [{simple.f90} {22,1}-{27,18}] => SCRATCH::ALLOCATE_SCRATCH [{simple.f90} {5,4}-{9,34}]
+---------------------------------------------------------------------------------------

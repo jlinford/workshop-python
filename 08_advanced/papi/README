@@ -1,0 +1,177 @@
+This example describes how to instrument outer-loops in C. 
+
+1) This is a sequential program, so let us choose a stub makefile that does
+not have a -mpi in its name for the Intel compiler.
+
+atlas608{shende1}436: ls $TAU/Makefile* | grep -v mpi | grep icpc
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pdt-openmp-opari
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pthread-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-pdt-openmp-opari
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-pthread-pdt
+
+Let us choose the top one with -pdt for autoinstrumentation:
+% setenv TAU_MAKEFILE /usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pdt
+
+2) Let us instruct it to instrument the loop:
+% cat select.tau
+BEGIN_INSTRUMENT_SECTION
+loops file="loop_test.c" routine="double multiply(void) C"
+END_INSTRUMENT_SECTION
+
+And pass this instrumentation specification file to TAU. This can be done by
+% setenv TAU_OPTIONS '-optTauSelectFile=select.tau -optVerbose'
+(see tau_compiler.sh for a full list)
+or in the Makefile, as 
+CC = tau_cc.sh -tau_options='-optTauSelectFile=select.tau -optVerbose'
+
+3) Build it
+% make
+
+4) Execute the program
+setenv TAU_METRICS TIME:PAPI_FP_INS:PAPI_L1_DCM
+srun -n 1 -p pdebug ./loop_test
+
+5) Examine the profile:
+% pprof
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call 
+---------------------------------------------------------------------------------------
+100.0        0.005       10,615           1           1   10615316 int main(int, char **) C  
+100.0        0.099       10,615           1           4   10615311 double multiply(void) C  
+ 83.1        8,823        8,823           1           0    8823649 Loop: double multiply(void) C[ file = <loop_test.c> line,col = <23,3> to <30,3> ]  
+ 16.7        1,772        1,772           1           0    1772350 Loop: double multiply(void) C[ file = <loop_test.c> line,col = <38,3> to <46,7> ]  
+  0.2           18           18           1           0      18110 Loop: double multiply(void) C[ file = <loop_test.c> line,col = <16,10> to <21,12> ]  
+  0.0            1            1           1           0       1103 Loop: double multiply(void) C[ file = <loop_test.c> line,col = <34,3> to <36,18> ]  
+
+
+The program multiplies two matrices using two different algorithms. We can see
+that the algorithm on lines 23-30 takes a lot longer than the one on lines
+38-46. 
+    23    for (i = 0; i < SIZE; i ++)
+    24    { 
+    25      for (j = 0; j < SIZE; j++)
+    26      {
+    27        for (k = 0; k < SIZE; k++)
+    28          C[i][j] += A[i][k] * B[k][j];
+    29      }
+    30    }
+
+    38    for(i=0; i < SIZE; i++)
+    39      for(k=0; k < SIZE; k++)
+    40        for(sz = 0; sz < SIZE; sz+=CACHE)
+    41        {
+    42          /*vl = min(SIZE-sz, CACHE); */
+    43          vl = (SIZE - sz < CACHE ? SIZE - sz : CACHE); 
+    44          for(strip = sz; strip < sz+vl; strip++)
+    45            C[i][strip] += A[i][k]*B[k][strip];
+    46        }
+
+We can evaluate the number of data cache misses in these two algorithms, but
+first we must choose a TAU stub makefile that has papi in its name:
+
+% ls $TAU/Makef* | grep papi | grep -v mpi 
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc
+-papi-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc
+-papi-pdt-openmp-opari
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc
+-papi-pthread-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-papi
+-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-papi
+-pdt-openmp-opari
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-papi
+-pdt-openmp-opari-pgi
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-papi
+-pdt-pgi
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-papi
+-pthread-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-papi
+-pthread-pdt-pgi
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-path
+cc-papi-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-path
+cc-papi-pdt-openmp-opari
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-path
+cc-papi-pthread-pdt
+
+For Intel compilers:
+
+atlas608{shende1}436: ls $TAU/Makefile*papi* | grep -v mpi | grep icpc
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pdt
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pdt-openmp-opari
+/usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pthread-pdt
+atlas608{shende1}437: 
+
+Let us choose the sequential, non-threaded option:
+
+% setenv TAU_MAKEFILE /usr/global/tools/tau/chaos_4_x86_64_ib/tau-2.18.2/x86_64/lib//Makefile.tau-icpc-papi-pdt
+
+Next, we set the environment variables COUNTER<1-n> or TAU_METRICS:
+% setenv TAU_METRICS TIME:PAPI_FP_INS:PAPI_L1_DCM:PAPI_TOT_CYC
+	OR
+% setenv COUNTER1 GET_TIME_OF_DAY
+% setenv COUNTER2 PAPI_FP_INS
+% setenv COUNTER3 PAPI_L1_DCM
+% setenv COUNTER4 PAPI_TOT_CYC
+
+The level 1 data cache misses are:
+> pprof -f MULTI__PAPI_L1_DCM/profile | more
+Reading Profile files in MULTI__PAPI_L1_DCM/profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time   Exclusive   Inclusive       #Call      #Subrs Count/Call Name
+           counts total counts                            
+---------------------------------------------------------------------------------------
+100.0          84    1.47E+08           1           1  146985009 int main(int, char **) C  
+100.0         276    1.47E+08           1           4  146984925 double multiply(void) C  
+ 93.2    1.37E+08    1.37E+08           1           0  137010908 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <23,3> to <30,3> ]  
+  6.8   9.957E+06   9.957E+06           1           0    9957220 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <38,3> to <46,7> ]  
+  0.0   1.643E+04   1.643E+04           1           0      16429 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <34,3> to <36,18> ]  
+  0.0          92          92           1           0         92 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <16,10> to <21,12> ]  
+> pprof -f MULTI__PAPI_TOT_CYC/profile 
+Reading Profile files in MULTI__PAPI_TOT_CYC/profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time   Exclusive   Inclusive       #Call      #Subrs Count/Call Name
+           counts total counts                            
+---------------------------------------------------------------------------------------
+100.0   1.697E+04   6.276E+09           1           1 6276296756 int main(int, char **) C  
+100.0     1.1E+05   6.276E+09           1           4 6276279785 double multiply(void) C  
+ 93.0   5.837E+09   5.837E+09           1           0 5837338381 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <23,3> to <30,3> ]  
+  6.9   4.349E+08   4.349E+08           1           0  434873252 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <38,3> to <46,7> ]  
+  0.0   2.571E+06   2.571E+06           1           0    2570979 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <16,10> to <21,12> ]  
+  0.0   1.387E+06   1.387E+06           1           0    1387146 Loop: double multiply(void) C[ fi
+le = <loop_test.c> line,col = <34,3> to <36,18> ]  
+
+
+So, the regular matrix multiply on lines 23-30 takes 1.3E8 vs 9.9E6 level 1 data
+cache misses for the strip mining optimization in loop 38-46. 
+
+
+see 
+% use papi
+% papi_avail
+% papi_native_avail
+% papi_event_chooser PRESET PAPI_FP_INS PAPI_L1_DCM
+to choose events. Set the names of these events in COUNTER[1-25] environment variables. 
+
+You may also view this data in paraprof. Calculate the number of floating point
+instructions per second (MFlops) in paraprof. Choose Options-> Show Derived Metric Panel in the main window and click on metrics and choose divide and apply 
+operation. Then see the exclusive mflops by clicking on the metric. 
+
+Try compiling the program with -O3 optimization and see the difference in MFlops. Also try the -xT or -xP compiler options for Intel and -fastsse for PGI.

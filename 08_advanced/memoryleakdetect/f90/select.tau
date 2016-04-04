@@ -1,0 +1,3 @@
+BEGIN_INSTRUMENT_SECTION
+memory file="simple.f" routine="FOO"
+END_INSTRUMENT_SECTION

@@ -1,0 +1,67 @@
+To use TAU with Sweep3d modify the Makefile and uncomment the following 
+lines to use tau_f90.sh and tau_cc.sh as the names of the compilers.
+FC = mpif90
+#FC = tau_f90.sh
+
+CC=mpif90
+#CC = tau_cc.sh
+
+Next, set an environment variable:
+% setenv TAU_MAKEFILE $TAU/Makefile.tau-mpi-pdt-pgi
+
+% make
+% qsub run.cray.job
+% paraprof
+
+Generates profiles.  To generate traces, use:
+
+% setenv TAU_MAKEFILE  $TAU/Makefile.tau-mpi-pdt-pgi
+or better still,
+% setenv TAU_MAKEFILE /usr/local/usp/PETtools/CE/tau/craycnl/lib/Makefile.tau-multiplecounters-mpi-papi-pdt-trace-pgi
+
+
+to choose a stub makefile with PAPI counter support. 
+% rm  sweep3d.mpi
+% make
+
+Select counters:
+% setenv COUNTER1 GET_TIME_OF_DAY
+% setenv COUNTER2 PAPI_FP_INS
+% setenv COUNTER3 PAPI_TOT_CYC
+
+
+Then, run the program:
+% poe ./sweep3d.mpi -procs 6
+
+It creates traces and event definition files (.trc, .edf) that should be merged. 
+% tau_treemerge.pl
+This creates a single tau.trc and tau.edf file.  Convert it to the Vampir format:
+% tau2otf tau.trc tau.edf sweep.otf
+% vampir sweep.otf
+
+Select Global Displays -> Timeline. Then, zoom in to a segment of a timeline. Choose 
+Global Displays -> Counter timeline. Right click and select another counter such as 
+Counter -> TAU Counter Data-> PAPI_TOT_CYC.
+Select a single process in the global timeline by clicking on it and then choose
+Process Displays -> Calltree to see its calltree. 
+Also, Preferences -> Color styles -> Activities will help you choose a different
+color for a function. 
+
+
+Next, we analyze the performance using Scalasca: 
+> ls $TAU/Makefile.tau-*scalasca*
+/usr/local/usp/PETtools/CE/tau/craycnl/lib/Makefile.tau-mpi-papi-pdt-epilog-scalasca-trace-pgi
+% setenv TAU_MAKEFILE /usr/local/usp/PETtools/CE/tau/craycnl/lib/Makefile.tau-mpi-papi-pdt-epilog-scalasca-trace-pgi
+
+
+Build the executable and run it:
+% make clean; make
+Uncomment the line in run.cray.job with the scout command for parallel trace analysis using Scalasca.
+% qsub run.cray.job
+
+It generates an epik_a directory with the scout.cube file.
+
+% paraprof scout.cube
+and see the metrics in the main window. 
+
+For information about Sweep3D, please refer to README.SWEEP3D

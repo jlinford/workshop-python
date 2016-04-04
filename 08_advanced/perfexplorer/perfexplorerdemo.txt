@@ -1,0 +1,312 @@
+Copy $PET_HOME/src/perfdmf.tgz from Lynx to your area (say /usr/var/tmp/<user>/)
+% tar zxf perfdmf.tgz
+% perfdmf_configure
+Choose derby as the database and when it asks for a path to the database 
+directory, say
+/usr/var/tmp/<user>/perfdmf
+hit enter when it prompts for the username and password and allow it to store
+this information in your ~/.ParaProf/perfdmf.cfg configuration file. Also,
+allow it to upload the schema to the database. 
+% perfexplorer_configure
+% perfexplorer
+
+
+Note these steps may be carried out on your laptop as well. It may be faster.
+On the mac, when you download TAU's .dmg file from http://www.cs.uoregon.edu/research/tau, it installs it in /Applications/TAU.
+
+GYRO data (various machines):
+----------------------------
+
+Strong scaling study.  The following paragraph is from the Gyro paper [Worley2005]:
+
+GYRO supports two methods for evaluating nonlinear terms in the underlying
+equations: direct and FFT-based. The FFT-based method is slower on small grids,
+but faster on large grids. However, the direct method achieves higher
+computational rates than the FFT-based method, and the crossover point varies
+from system to system. 
+
+To show this difference:  
+1) Expand the database tree
+2) Expand the GYRO application
+3) Select the four "phoenix" experiments.  
+4) Under the "Charts" menu, select the "Timesteps per second" chart.  
+5) Enter "100" in the dialog box.
+
+  The graph shows the performance differences in terms of timesteps per second
+  on the Cray X1 for the two methods, and for running out of two different file
+  systems. Here the direct method is approximately 10% faster than the FFT
+  method, and the choice of file system makes a 30% difference in performance.
+  Other options found to be important to GYRO include settings for
+  system-specific environment variables that impact memory, OpenMP, or MPI
+  performance.  
+
+
+
+To show the difference between architectures:
+1) Expand the database tree
+2) Expand the GYRO application
+3) Select the "phoenix.scratch.dft" experiment, and the cheetah, seaborg
+   and teragrid experiments.  
+4) Under the "Charts" menu, select the "Timesteps per second" chart.  
+5) Enter "100" in the dialog box.
+6) (Optional) Under the "Charts" menu, select the "Total Execution Time" chart.  
+
+  This graph is the inter-platform comparison of GYRO performance. The
+  worst performer is Seaborg (IBM SP RS/6000 at NERSC).  The best performer
+  (least overhead) is Phoenix (Cray X1).  Cheetah is an IBM p690 cluster.
+  Don't know what machine in TeraGrid was used.
+  (Optional) On the "Total Execution Time" chart, notice that the 32 processor
+  run on the Cray X1 took nearly the same amount of time as the 512 processor run
+  on the IBM SP.
+
+
+
+To show the difference between platforms in communication time, do the following:
+1) keep the same selections from the previous example
+2) Under the "Charts" menu, select the "Group % of Total Time" chart.
+3) Select the "Transpose" group.
+
+  This graph shows the percentage of total run time that is from the MPI
+  communication in transposing the matrices.  Seaborg (IBM SP RS/6000 at NERSC)
+  has the most MPI overhead when running the GYRO application.
+  The best performer (least overhead) is Phoenix (Cray X1).  Cheetah is an IBM
+  p690 cluster.  Don't know what machine in TeraGrid was used.
+
+
+
+To investigate the Seaborg run further:
+1) Select only the "Seaborg" experiment.
+2) Under the "Charts" menu, select the "Runtime Breakdown" chart.
+
+  This graph shows the breakdown of the total run time as a fraction of 100%.
+  The blue field, "Coll_tr", represents the collective transpose time in the
+  application.  As is shown, the time spent in Coll_tr increases (as a fraction
+  of the total run time) as the number of processors increases.  NL_tr increases
+  as well, but not at the same rate, although it is more time overall.
+
+
+
+To get another perspective on this comparison:
+1) Select only the "Seaborg" experiment.
+2) Under the "Charts" menu, select the "Correlate Events with Total Runtime"
+   chart.
+3) In the dialog, select the "Strong scaling" option.
+
+  This graph shows the trend for each significant (more than 2% of total
+  runtime - this is adjustable) event along with the trend line for the total
+  runtime (the total line is the dashed black line, which is slightly obscured
+  by the yellow line).  As you can see, all lines are trending down, except the
+  "Coll_tr" event, which is trending slightly up as communication overhead
+  increases.
+
+
+
+FLASH Hydro Radiation Code on BlueGene :
+----------------------------------------
+
+Weak scaling study (performed by Sameer).
+64, 128, 512, 1024 processors done at ANL, 256 at LLNL.
+
+Processors:     Problem Size:
+64              10x10x10 = 1000 square units
+128             12x12x12 = 1728 square units
+256             16x16x16 = 4096 square units
+512             20x20x20 = 8000 square units
+1024            unknown... probably 25x25x25
+
+To show the total runtime Chart:
+1) Expand the database tree
+2) Expand the "FLASH_2.5_hydro_radiation" application
+3) Select the "LLNL_UBGL" experiment
+4) Optionally expand the experiment, to show the 5 trials in the study
+5) Under the "Charts" menu, select the "Total Execution Time" chart.
+
+  This graph shows the total execution times for each of the trials.  In this
+  study, the amount of work increases with the number of processors, although
+  not at exactly the same rate (slightly less for 128, slightly more for 256).
+
+
+
+To show the scalability and/or relative efficiency charts:
+1) Expand the database tree
+2) Expand the "FLASH_2.5_hydro_radiation" application
+3) Select the "LLNL_UBGL" experiment
+4) Optionally expand the experiment, to show the 5 trials in the study
+5) Under the "Charts" menu, select the "Relative Efficiency" chart.
+6) In the dialog that comes up, select "Weak Scaling".
+
+  The relative efficiency chart shows the ratio of the expected scaled speedup
+  to the actual scaled speedup.  The speedup chart shows the scaled speedup of
+  the application relative to the ideal expected speedup.  To get some idea
+  which events are not scaling well, look at the relative efficiency chart
+  for all events:
+
+7) Under the "Charts" menu, select the "Relative Efficiency by Event" chart.
+
+  This is a bit hard to see, but the event which scales the poorest is at the
+  bottom, MPI_Allgather().  To get a better look of how MPI_Allgather() is
+  effecting the total runtime, look at the correlation between the total
+  runtime and each of the events:
+
+8) Under the "Charts" menu, select the "Correlate Events with Total Runtime"
+   chart.
+
+  This is a little easier to see - the axis for the total runtime is on the
+  right, and is represented by the dashed line.  The general trend is up, which
+  is usual for a weak scaling study.  Looking at the events, we want to find
+  events which have a similar trend line - MPI_Ssend(), MPI_Waitall() and
+  MPI_Barrier() (and MPI_Allreduce(), to a lesser extent) are all trending up,
+  although their correlation r values (all less than 0.4) do not show a very
+  convincing relationship.  In order to see how all the MPI events are
+  effecting the total runtime:
+
+9) Under the "Charts" menu, select the "Group % of Total Runtime" chart.
+10) In the dialog that comes up, select the "MPI" group.
+
+  What this graph shows is the percentage of total execution time that is spent
+  in the MPI subsystem.  As is shown, when using 1024 processors, MPI makes up
+  over 69% of the total runtime.  For another view of this:
+
+11) Under the "Charts" menu, select the "Runtime Breakdown" chart.
+
+  This chart shows that the MPI events are all increasing as a percentage of
+  the total runtime.
+
+
+
+Clustering and Correlation analysis of the FLASH data:
+-----------------------------------------------------
+
+I have already done the clustering and correlation analysis of this data, so
+that your audience won't have to wait for it.
+
+There are several ways to look at the 1024 processor run of the FLASH
+application.  For this example, let's start with a summary view of the
+data:
+
+1) Expand the database tree
+2) Expand the "FLASH_2.5_hydro_radiation" application
+3) Expand the "LLNL_UBGL" experiment
+4) Expand the "1024p" trial
+4) Select the "Time" metric
+5) Under the "Visualization" menu, select the "Show Data Summary" option.
+
+  The table presented is a list of all the events in the trial, sorted by
+  name.  There are several interesting columns available, the events can
+  be sorted by any of them (As an aside, the Derby database does not support
+  the "STDDEV" operation, so the standard deviation and weighted normalized
+  standard deviation - the last two columns - are not populated.  In the 
+  future, I will change this processing so that all databases are supported
+  equally).  To sort by exclusive time (in nanoseconds):
+
+6) Click on the column heading labeled "avg exclusive" or avg exclusive %".
+
+  The events are now sorted by exclusive time.  The top four events,
+  MPI_Waitall(), MPI_Ssend(), MPI_Barrier(), and MODULEHYDROSWEEP::HYDROSWEEP
+  are the most "significant" events, and are the events that will be selected
+  for the 4D view.  To see the 4D view:
+
+7) Under the "Visualization" menu, select the "Show 3D Correlation Cube" option.
+
+  There are some interesting clustering and correlations in this data.  First,
+  there appear to be three obvious clusters of data in both the
+  MODULEHYDROSWEEP::HYDROSWEEP dimension and the combined dimension of the MPI
+  events.  These clusters also appear to be very closely correlated, as the
+  colors relating to the values in the MODULEHYDROSWEEP::HYDROSWEEP dimension
+  correlate with the clusters in the combined MPI dimensions.  Rotating this
+  view in the window may help show these clusters better.  Also, there is an
+  obvious correlation between MPI_Ssend() and MPI_Waitall().  To examine all of
+  the correlations:
+
+8) Maximize the main PerfExplorer window
+9) In the right side of the PerfExplorer main window, select the "Correlation
+   Results" tab
+
+  This window shows all of the major events correlated against one another.
+  When the correlation analysis was performed, only events which consisted of
+  2% or more of the total runtime were correlated.  There are two interesting
+  correlations.  To see the first one:
+
+10) Click on the seventh image in the first row
+
+  A dialog window will come up, and show the correlation between the
+  MPI_Barrier() event and the CALC_CUT_BLOCK_CONTRIBUTIONS event.  There is a
+  negative linear correlation between these two events.  As less time is spent
+  in CALC_CUT_BLOCK_CONTRIBUTIONS, more time is spent in MPI_Barrier(), which
+  would make sense, if the barrier is waiting on the calculation to complete.
+  The other interesting correlation:
+
+11) Close the dialog window
+12) Click on the last image in the second-to-last row
+
+  A dialog window will come up, and show the correlation between the
+  MPI_Waitall() event and the MPI_Ssend() event.  There is a negative linear
+  correlation between these two events, and it is split into three clusters.
+  As less time is spent in MPI_Ssend(), more time is spent in MPI_Waitall(),
+  which is an interesting correlation, because Ssend is a synchronous send, and
+  does not return until the receiver starts receiving the message (no
+  buffering).  MPI_Waitall() is commonly used to barrier a collection of
+  MPI_Irecv() (non-blocking receive operation) calls.  Therefore, it appears
+  that the MPI_Ssend calls are matched with MPI_Irecv() + MPI_Waitall() calls.
+
+
+
+To begin to examine the clustering of the data, let's examine the distributions:
+
+1) Expand the database tree
+2) Expand the "FLASH_2.5_hydro_radiation" application
+3) Expand the "LLNL_UBGL" experiment
+4) Expand the "1024p" trial
+4) Select the "Time" metric
+5) Under the "Visualization" menu, select the "Create Histograms" option.
+
+  A dialog window will come up, showing the distributions of the significant
+  events.  Some events are CLEARLY multi-modal (such as
+  MODULEHYDROSWEEP::HYDROSWEEP and RADIATION), and some are clearly skewed
+  right (MPI_Allreduce, MPI_Barrier).  The multi-modal distributions indicate
+  clusters, and the right skewed datasets indicate outliers of long times.
+
+
+To view the clustering results of the application:
+-------------------------------------------------
+
+6) Maximize the main PerfExplorer window
+7) In the right side of the main window, select the "Cluster Results" tab.
+
+  Shown are k-means cluster results for 9 values of k, from 2 to 10.  There are
+  six summarization images for each cluster.  The first image shows the
+  membership counts for each cluster.  The second image shows a 2-D projection
+  of the clusters against the two most "significant" events.  The third image
+  shows a "virtual topology" layout of the threads of execution, where node 0,0
+  is in the upper left corner.  The fourth image shows the minimum values for
+  the events in each cluster.  The fifth image shows the average values for the
+  events in each cluster.  The sixth image shows the maximum values for the
+  events in each cluster.  The cluster results with k=6 appears to be the most
+  interesting (in that there appear to be significant differences in the average
+  behavior in each cluster), so let's examine that one:
+
+8) In the fifth row (k=6), select the average behavior (fifth image) for the
+   clusters
+
+  In this view of the average behavior for each cluster, there are definite
+  differences between some of the clusters.  Obviously, cluster 5, containing
+  just one process, spends nearly all of its time in MPI routines, specifically
+  MPI_Allreduce() and MPI_Barrier() (obvious management routines).  The FLASH
+  code must use the root process to manage all the other processes, and does not
+  use the main process for any calculations.  As for the other 5 clusters, the
+  differences appear to be permutations of varying time spent in computation
+  and communication routines - this code could be a candidate for load balancing.
+  Certainly, there is a lot of time (over 69% of total) spent in MPI - there
+  could be lots of opportunity for optimization there.
+  
+  The other views of the cluster data do not offer much help - the virtual
+  topology does not give significant insight into the application.  The
+  processes are laid out in a block of 32x32 - which may not be a natural
+  layout for this application.  The only interesting point is that more than
+  half of the machine - clusters number 0 and 2 (red and green, respectively)
+  spend around 25% of their time in calculation routines - the rest of their
+  time is spent in MPI_Barrier(), MPI_Ssend() and MPI_Waitall().  It could be
+  that for this application at 1024 processors, well over half of the machine
+  is quite underutilized...
+
+- Kevin Huck khuck@cs.uoregon.edu.

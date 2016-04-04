@@ -1,0 +1,4 @@
+BEGIN_INSTRUMENT_SECTION
+#loops file="loop_test.c" routine="double multiply(void) C"
+loops file="*.c" routine="#"
+END_INSTRUMENT_SECTION

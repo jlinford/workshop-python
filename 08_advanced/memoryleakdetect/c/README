@@ -1,0 +1,54 @@
+This contrived example illustrates how we can detect memory leaks in a C program.
+
+1) Build it
+% setenv TAU_MAKEFILE $TAU/Makefile.tau-icpc-pdt
+% make
+2) Set TAU_CALLPATH_DEPTH to capture a segment of the callpath. Default depth is 2.
+% setenv TAU_CALLPATH_DEPTH 10
+
+3) Run it
+% ./simple
+4) Analyze the performance data
+> pprof
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call 
+---------------------------------------------------------------------------------------
+100.0         0.21            1           1           4       1332 int main(int, char **) C  
+ 84.2        0.232            1           4           4        280 int foo(int) C  
+ 55.6         0.74         0.74           4           0        185 int bar(int) C  
+ 49.2         0.15        0.655           3           3        218 int g(int) C  
+---------------------------------------------------------------------------------------
+
+USER EVENTS Profile :NODE 0, CONTEXT 0, THREAD 0
+---------------------------------------------------------------------------------------
+NumSamples   MaxValue   MinValue  MeanValue  Std. Dev.  Event Name
+---------------------------------------------------------------------------------------
+         2         52         48         50          2  MEMORY LEAK! malloc size <file=simple.inst.c, line=20> : int g(int) C   => int bar(int) C  
+         1         80         80         80          0  free size <file=simple.inst.c, line=23>
+         1         80         80         80          0  free size <file=simple.inst.c, line=23> : int g(int) C   => int bar(int) C  
+         1        180        180        180          0  free size <file=simple.inst.c, line=30>
+         1        180        180        180          0  free size <file=simple.inst.c, line=30> : int foo(int) C   => int bar(int) C  
+         3         80         48         60      14.24  malloc size <file=simple.inst.c, line=20>
+         3         80         48         60      14.24  malloc size <file=simple.inst.c, line=20> : int g(int) C   => int bar(int) C  
+         1        180        180        180          0  malloc size <file=simple.inst.c, line=28>
+         1        180        180        180          0  malloc size <file=simple.inst.c, line=28> : int foo(int) C   => int bar(int) C  
+---------------------------------------------------------------------------------------
+
+There were 2 memory allocations that did not have corresponding frees. 
+Both of them occurred at line 20 in simple.inst.c and came from the callpath  
+int main(int, char **)   => int foo(int)   => int g(int)   => int bar(int).   
+
+
+   +17    if (value > 5)
+   +18    {
+   +19      printf("looks like it came here from g!\n");
+-> +20      x = (int *) malloc(sizeof(int) * value);
+   +21      x[2]= 2;
+   +22      /* do not free it! create a memory leak, unless the value is > 15 */
+   +23      if (value > 15) free(x);
+   +24    }
+

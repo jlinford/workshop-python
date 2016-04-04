@@ -1,0 +1,8 @@
+module load cuda
+export LD_LIBRARY_PATH=/apps/cuda/5.0.35/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+nvidia-smi -L
+
+make
+make run
+pprof
+
