@@ -1,6 +1,6 @@
 # Use source-based instrumentation:
 make CC=tau_cc.sh
-bsub < tau.job
+./tau.sh
 
 # View profiles on command line:
 pprof | less

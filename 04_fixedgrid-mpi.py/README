@@ -1,5 +1,5 @@
 # No compilation required, just:
-bsub < tau.job
+./tau.sh
 
 # View profiles on command line:
 pprof | less

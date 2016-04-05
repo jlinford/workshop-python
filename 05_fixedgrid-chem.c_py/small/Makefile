@@ -13,7 +13,7 @@
 CC = gcc
 LD = $(CC)
 
-OPT_FLAGS = -O3 -fopenmp
+OPT_FLAGS = -O3
 WARN_FLAGS = -Wall
 
 CPPFLAGS = 

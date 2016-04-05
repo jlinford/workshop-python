@@ -10,6 +10,8 @@ CFLAGS        = -g
 CXXFLAGS      = -fPIC -fpermissive -g
 FFLAGS        = -g 
 
+PYTHON_PREFIX = /opt/ParaTools/anaconda2/4.0.0
+NUMPY_PREFIX = $(PYTHON_PREFIX)/lib/python2.7/site-packages/numpy
 PYINC = -I$(PYTHON_PREFIX)/include/python2.7 -I$(NUMPY_PREFIX)/core/include
 PYLIB = -L$(PYTHON_PREFIX)/lib -lpython2.7
 

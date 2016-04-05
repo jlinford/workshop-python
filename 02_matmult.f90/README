@@ -1,6 +1,6 @@
 # Use source-based instrumentation:
 make F90=tau_f90.sh
-bsub < tau.job
+./tau.sh
 
 # View profiles on command line:
 pprof | less

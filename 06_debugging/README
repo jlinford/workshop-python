@@ -1,6 +1,6 @@
 # No special instrumentation required, just:
 make
-bsub < tau.job
+./tau.sh
 
 # View backtrace on command line:
 paraprof -d | grep BACKTRACE
