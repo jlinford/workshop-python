@@ -59,7 +59,7 @@
          dummy1 = dummy1 - dummy2
       end do
 
-      x(len+5) = 1
+      !x(len+5) = 1
 
       return
       end

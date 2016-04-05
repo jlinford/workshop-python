@@ -3,25 +3,15 @@
 #### Defns ##########
 CC            = mpicc
 CXX           = mpicxx
-F90           = gfortran
+F90           = mpif90
 MPIF90        = mpif90
 
 CFLAGS        = -g
 CXXFLAGS      = -fPIC -fpermissive -g
 FFLAGS        = -g 
 
-UNAME = $(shell uname)
-ifeq ($(UNAME),Darwin)
-PYTHON_PREFIX = /System/Library/Frameworks/Python.framework/Versions/2.7
-NUMPY_PREFIX = /System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/numpy
-PYINC = -I$(PYTHON_PREFIX)/include/python2.7 -I$(NUMPY_PREFIX)/core/include
-PYLIB = -framework Python
-else
-PYTHON_PREFIX = /usr
-NUMPY_PREFIX = /usr/lib/python2.7/site-packages/numpy
 PYINC = -I$(PYTHON_PREFIX)/include/python2.7 -I$(NUMPY_PREFIX)/core/include
 PYLIB = -L$(PYTHON_PREFIX)/lib -lpython2.7
-endif
 
 #### Codes ##########
 CXX_OBJS  = SAMINT.o samint_wrap.o

@@ -1,5 +1,5 @@
 
-CC = gcc
+CC = icc
 
 all:
 	$(MAKE) -C small CC=$(CC)

@@ -12,7 +12,7 @@
 #######################################################################
  
 
-CC = gcc
+CC = icc
 CFLAGS = -g -DAPP_USE_INLINE_MULTIPLY
 LDFLAGS = -g
 LIBS =

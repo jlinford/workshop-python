@@ -138,8 +138,8 @@ def discretize_cols(dy, dt, conc, wind, diff):
         conc[:,j] = discretize(dy, dt, ccol, wcol, dcol, cb, wb, db)
 
 
-def fixedgrid(nrows=50, ncols=50, 
-              source_rate=4.67e21, source_row=25, source_col=25,
+def fixedgrid(nrows=10, ncols=10, 
+              source_rate=4.67e21, source_row=5, source_col=5,
               dx=1000, dy=1000, dt=50,
               tstart=0, tend=3600,
               O3_init=8.61e09,
@@ -170,4 +170,4 @@ def fixedgrid(nrows=50, ncols=50,
 
 
 if __name__ == "__main__":
-    fixedgrid(tstart=0, tend=900)
+    fixedgrid(tstart=0, tend=200)

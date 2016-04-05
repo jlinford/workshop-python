@@ -6,13 +6,14 @@
 #ifndef included_pycintfc
 #define included_pycintfc
 
-#include <iostream>
 #define MPICH_SKIP_MPICXX
 #include "mpi.h"
 #define extern_t
 #ifndef included_pyGlobals
 #include "pyGlobals.h"
 #endif
+#include <iostream>
+#include <cstdio>
 
 void printGrids(int ngrids, SAMINT::patchgrid* obgrids);
 void printLocalData(int nlocal, SAMINT::patchdata* obdata);

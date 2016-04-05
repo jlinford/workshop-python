@@ -14,3 +14,8 @@ MULTI__*
 *.inst.*
 *.pomp.*
 *.inc
+
+*.err
+*.out
+
+.ipynb_checkpoints

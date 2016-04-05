@@ -1,0 +1,16 @@
+# Use source-based instrumentation:
+make F90=tau_f90.sh
+bsub < tau.job
+
+# View profiles on command line:
+pprof | less
+
+# View profiles in GUI:
+paraprof
+
+# Package profiles:
+paraprof --pack profiles.ppk
+
+# View packaged profiles:
+paraprof profiles.ppk
+

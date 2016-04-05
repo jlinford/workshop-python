@@ -1,0 +1,19 @@
+# No special instrumentation required, just:
+make
+bsub < tau.job
+
+# View backtrace on command line:
+paraprof -d | grep BACKTRACE
+
+# View profiles on command line:
+pprof | less
+
+# View profiles in GUI:
+paraprof
+
+# Package profiles:
+paraprof --pack profiles.ppk
+
+# View packaged profiles:
+paraprof profiles.ppk
+
